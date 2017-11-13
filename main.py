@@ -2,9 +2,9 @@ import json
 
 from bson import json_util
 from flask import Flask, request, Response, session, jsonify
+from flask_bcrypt import Bcrypt
 from flask_pymongo import PyMongo
 from pymongo.errors import DuplicateKeyError
-from werkzeug import security
 from werkzeug.exceptions import BadRequest, NotFound, UnsupportedMediaType, Unauthorized
 
 from exceptions import JSONExceptionHandler
@@ -22,7 +22,7 @@ app.secret_key = 'A0Zr98j/3yX R~XHH!!!jmN]LWX/,?RT'
 
 # This initializes PyMongo and makes `mongo` available
 mongo = PyMongo(app)
-
+bcrypt = Bcrypt(app)
 
 @app.route('/logout')
 def logout():
@@ -66,7 +66,7 @@ def login():
     if user is None:
         session.clear()
         raise BadRequest('User not found')
-    if not security.check_password_hash(user['password_hash'], body.get('password')):
+    if not bcrypt.check_password_hash(user['password_hash'], body.get('password')):
         session.clear()
         raise BadRequest('Password does not match')
 
@@ -95,7 +95,7 @@ def add_new_user():
     if body.get('password') is None:
         raise BadRequest('missing password property')
 
-    password_hash = security.generate_password_hash(body.get('password'))
+    password_hash = bcrypt.generate_password_hash(body.get('password'))
     try:
         mongo.db.users.insert_one({'username': body.get('username'), 'password_hash': password_hash})
     except DuplicateKeyError:
