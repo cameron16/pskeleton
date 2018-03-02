@@ -1,7 +1,6 @@
 from flask import jsonify
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-
 class JSONExceptionHandler(object):
     """
     This is a very simple class that is used to transform Flask default exceptions from
